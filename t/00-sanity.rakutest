@@ -1,0 +1,5 @@
+use v6.d;
+use Iec104Parser;
+use Test;
+
+done-testing;
