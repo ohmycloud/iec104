@@ -11,8 +11,6 @@ sub short-float(Buf $info-element, Int $num, Int $ti, Int $sq) is export {
         when 1 {
             my $init-info-obj-addr = info-obj-addr($info-element[0], $info-element[1], $info-element[2]);
             gather for ^$num -> $i {
-                my $info-address = info-address($info-element[0], $info-element[1], $info-element[2]);
-                say $info-address;
                 # 信息对象地址
                 my $info-obj-address = $init-info-obj-addr++;
                 # 信息对象地址值
