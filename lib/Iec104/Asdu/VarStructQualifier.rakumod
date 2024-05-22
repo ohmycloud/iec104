@@ -8,6 +8,6 @@ sub var-struct-qualifier(Int $buf) is export {
         when 0   { take 'sq' => 0 }
         default { take Hash.new }
     };
-#    %sq['info_obj_num'] = $buf +& 0x7f;
+    %sq{'info-obj-num'} = $buf +& 0x7f;
     %sq
 }
