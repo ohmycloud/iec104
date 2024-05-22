@@ -1,30 +1,26 @@
 use Iec104::Asdu;
 use Iec104::ControlDomain;
+use Iec104::Message;
 
 use experimental :pack;
 
 sub hex-handle(Str $hex-message) is export {
     my $buf = pack("H*", $hex-message);
-    my $length = $buf.elems;
-    if $length >= 2 && $buf[0] == 0x68 {
-        say 'APCI 应用规约控制信息: ';
-        say "\t启动字符[1th byte]: 0x68";
-    }
+    if $buf.elems >= 6 {
+        my $message = Message.new(
+                :header(Buf.new($buf[^1])),
+                :apdu-length(Buf.new($buf[1..^2])),
+                :ctrl-domain(Buf.new($buf[2..^6])),
+                :type-identifier(Buf.new($buf[6..^7])),
+                :qualifier(Buf.new($buf[7..^8])),
+                :trans-reason(Buf.new($buf[8..^10])),
+                :terminal-id(Buf.new($buf[10..^12])),
+                :info-obj-addr(Buf.new($buf[12..^15])),
+                :asdu(Buf.new($buf[6..*]))
+                );
+        say frame-type(Buf.new($buf[2], $buf[3], $buf[4], $buf[5]));
+        say asdu-message($message.asdu);
 
-    # $buf[1] 为 APDU 长度, APDU 长度+2 = 数据长度
-    # 2 字节中, 1 字节来自于启动字符, 1 字节来自于APDU长度
-    if ($length != $buf[1] + 2) {
-        die("length dismatch {$buf[1]+2} {$length}");
-    }
-
-    say "\t应用规约数据单元(APDU)长度[2th byte]: {$buf[1]} 字节";
-    say "\t控制域[3th byte - 6th byte]:" ~ frame-type(Buf.new($buf[2], $buf[3], $buf[4], $buf[5]));
-
-    # 解析 ASDU 数据, $buf[2] 为控制域1, 即用控制域的第一个字节和数字3做位运算, 只有 I 类报文才有 ASDU
-    if $buf[2] +& 0x03 != 3 && $buf[2] +& 0x03 != 1 {
-        say "ASDU 应用服务数据单元：";
-        my Buf $asdu = Buf.new($buf[6..*]); # 6 个字节之后的数据为 ASDU 数据
-        asdu-message($asdu);
     }
 }
 

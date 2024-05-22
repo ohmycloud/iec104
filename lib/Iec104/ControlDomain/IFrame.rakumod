@@ -13,5 +13,5 @@ method receive-serial-number(--> Int) {
 }
 
 method gist(--> Str) {
-    sprintf("发送序列号: %s, 接收序列号: %s", $.send-serial-number, $.receive-serial-number)
+    sprintf("send serial number: %s, receive serial number: %s", $.send-serial-number, $.receive-serial-number)
 }

@@ -8,16 +8,14 @@ unit module Iec104::Asdu;
 
 #| 解析 ASDU 数据
 sub asdu-message(Buf $b) is export {
-    my $type-identifier = type-identifier-values($b[0]);
-    my $mutable-structure-qualifier = var-struct-qualifier($b[1]);
+    my %sq = var-struct-qualifier($b[1]);
     my $transmission-reason = trans-reason($b[2], $b[3]);
-    my $asdu-common-address = common-address($b[4], $b[5]);
-    my Buf $info = Buf.new($b[6..*]);
-    my $info-object-str = info-object($info, $b[0], ($b[1] +& 0x80) +> 7, ($b[1] +& 0x7f));
+    my $terminal_id = common-address(Buf.new($b[4..5]));
+    my Buf $asdu = Buf.new($b[6..*]);
+    my %info-object = info-object($asdu, $b[0], ($b[1] +& 0x80) +> 7, ($b[1] +& 0x7f));
+    %info-object.append(%sq);
+    %info-object{'terminal-id'} = $terminal_id;
+    %info-object{'type-identifier'} = $b[0];
 
-    say "\t类属性标识符[7th byte]：" ~ $type-identifier;
-    say "\t可变结构限定词[8th byte]：" ~ $mutable-structure-qualifier;
-    say "\t传送原因[9th byte - 10th byte]：" ~ $transmission-reason;
-    say "\t应用服务数据单元公共地址[11th byte - 12th byte]：" ~ $asdu-common-address;
-    say $info-object-str;
+    %info-object
 }
